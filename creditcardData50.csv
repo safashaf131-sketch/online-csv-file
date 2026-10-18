@@ -1,0 +1,91 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows',None)
+pd.set_option('display.width',1000)
+pd.set_option('display.max_colwidth',None)
+
+credit_card = pd.read_csv("creditcardData50.csv",sep="\t")
+credit_card.columns=credit_card.columns.str.strip()
+def Display():
+    print(credit_card.head(10))
+    print("Total records:", len(credit_card))
+
+def choose_year():
+    while True:
+        try:
+            y = int(input("Enter year (2021 or 2022): "))
+            if y in [2021, 2022]: return y
+            print("Enter 2021 or 2022.")
+        except ValueError:
+            print("Enter a valid year.")
+
+def analyse(column, title):
+    y = choose_year()
+    data = credit_card[credit_card["Year"] == y]
+    counts = data[column].value_counts()
+    print(counts)
+    counts.plot(kind="bar", title=f"{title} - {y}", xlabel=column,
+                ylabel="Number of customers", rot=25)
+    plt.tight_layout()
+    plt.show()
+
+def GenderAnalysis(): analyse("Gender", "Gender Analysis")
+def AgeAnalysis(): analyse("Age_Group", "Age Group Analysis")
+def EducationAnalysis(): analyse("Education_Level", "Education Analysis")
+def IncomeAnalysis(): analyse("Income_Category", "Income Category Analysis")
+def CardAnalysis(): analyse("Card_Category", "Card Category Analysis")
+def StatusAnalysis(): analyse("Customer_Status", "Customer Status Analysis")
+
+def Summary():
+    print(credit_card.info())
+    print("\\nMissing values:\\n", credit_card.isnull().sum())
+    print(credit_card[["Total_Trans_Amt", "Total_Trans_Ct"]].describe())
+
+def YearAnalysis():
+    counts = credit_card["Year"].value_counts().sort_index()
+    print(counts)
+    counts.plot(kind="bar", title="Customer Records by Year")
+    plt.tight_layout()
+    plt.show()
+
+def TransactionAnalysis():
+    y = choose_year()
+    data = credit_card[credit_card["Year"] == y]
+
+    print("Average transaction amount:", round(data["Total_Trans_Amt"].mean(), 2))
+    print("Highest transaction amount:", data["Total_Trans_Amt"].max())
+    print("Lowest transaction amount:", data["Total_Trans_Amt"].min())
+    print("Average transaction count:", round(data["Total_Trans_Ct"].mean(), 2))
+    data.groupby("Card_Category")["Total_Trans_Amt"].mean().plot(kind="bar",
+        title=f"Average Transaction Amount by Card - {y}")
+    plt.tight_layout()
+    plt.show()
+
+def CompareYears():
+    result = credit_card.groupby("Year")[["Total_Trans_Amt","Total_Trans_Ct"]].mean().round(2)
+    print(result)
+    result["Total_Trans_Amt"].plot(kind="bar", title="Average Transaction Amount by Year")
+    plt.tight_layout()
+    plt.show()
+
+def MainMenu():
+    menu = {"1":("Display records",Display),"2":("Dataset summary",Summary),
+    "3":("Year-wise record count",YearAnalysis),"4":("Gender analysis",GenderAnalysis),
+    "5":("Age group analysis",AgeAnalysis),"6":("Education analysis",EducationAnalysis),
+    "7":("Income category analysis",IncomeAnalysis),"8":("Card category analysis",CardAnalysis),
+    "9":("Transaction analysis",TransactionAnalysis),"10":("Customer status analysis",StatusAnalysis),
+    "11":("Compare 2021 and 2022",CompareYears)}
+    while True:
+        print("\\n===== CREDIT CARD ANALYSIS PROJECT =====")
+        for k,v in menu.items(): print(k+".",v[0])
+        print("0. Exit")
+        choice=input("Enter your choice: ").strip()
+        if choice=="0": break
+        elif choice in menu: menu[choice][1]()
+        else: print("Invalid choice.")
+if __name__ == "__main__":
+    MainMenu()
+
